@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚨 EMERGENCY ACCESS - Medical System</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Additional emergency-specific styles */
+        .emergency-search-info {
+            background: linear-gradient(135deg, #fff5f7, #ffeaea);
+            border-radius: 14px;
+            padding: 15px;
+            margin: 15px auto;
+            max-width: 550px;
+            text-align: center;
+            border: 2px dashed #ff416c;
+            color: #ff416c;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .emergency-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .emergency-reset-btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            box-shadow: 0 6px 18px rgba(52, 152, 219, 0.25);
+        }
+        
+        .emergency-reset-btn:hover {
+            background: linear-gradient(45deg, #2980b9, #2573a7);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.35);
+        }
+        
+        .emergency-print-btn {
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            box-shadow: 0 6px 18px rgba(46, 204, 113, 0.25);
+        }
+        
+        .emergency-print-btn:hover {
+            background: linear-gradient(45deg, #27ae60, #219653);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(46, 204, 113, 0.35);
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #eee;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .patient-badge {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .patient-avatar-emergency {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 800;
+            box-shadow: 0 8px 25px rgba(255, 65, 108, 0.35);
+        }
+        
+        .patient-info-emergency h2 {
+            font-size: 24px;
+            color: #ff416c;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+        
+        .patient-id-emergency {
+            font-size: 14px;
+            color: #7f8c8d;
+            background: #f8f9fa;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body class="emergency-mode">
+    <!-- EMERGENCY HEADER WITH LOGOUT AND HOME BUTTON -->
+    <div class="emergency-header">
+        <div class="emergency-header-content">
+            <div>
+                <h1><i class="fas fa-ambulance"></i> EMERGENCY MEDICAL ACCESS</h1>
+                <p>CRITICAL INFORMATION ONLY • NO AUTHENTICATION REQUIRED</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <!-- Home button for doctors (shown conditionally) -->
+                <button id="emergency-home-btn" class="emergency-home-btn" style="display: none;" onclick="goToHome()">
+                    <i class="fas fa-home"></i> Home
+                </button>
+                <button class="emergency-logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="emergency-container">
+        <!-- SCANNER SECTION -->
+        <div id="scanner-section" class="emergency-scanner">
+            <div class="scanner-title">
+                <i class="fas fa-heartbeat"></i> SCAN PATIENT RFID FOR EMERGENCY INFO
+            </div>
+            
+            <input type="text" 
+                   id="emergency-input" 
+                   class="emergency-input" 
+                   placeholder="SCAN HERE" 
+                   autofocus
+                   autocomplete="off">
+            
+            <div id="emergency-error"></div>
+            
+            <div class="manual-entry">
+                <p style="color: #2c3e50; margin-bottom: 15px; font-weight: 800;">
+                    <i class="fas fa-keyboard"></i> Or search by patient name:
+                </p>
+                
+                <div class="search-container">
+                    <input type="text" 
+                           id="patient-search-input" 
+                           class="search-input" 
+                           placeholder="Type patient name..."
+                           autocomplete="off">
+                    <div class="search-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div id="search-results" class="search-results"></div>
+                </div>
+                
+                <div class="emergency-search-info">
+                    <i class="fas fa-info-circle"></i> Search works for first name, last name, or patient ID
+                </div>
+                
+                <div class="emergency-actions">
+                    <button class="emergency-reset-btn" onclick="clearSearch()">
+                        <i class="fas fa-redo"></i> Clear Search
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EMERGENCY INFORMATION DASHBOARD -->
+        <div id="emergency-info" class="emergency-info">
+            <div class="dashboard-header">
+                <div class="patient-badge">
+                    <div class="patient-avatar-emergency" id="emergency-patient-avatar">P</div>
+                    <div class="patient-info-emergency">
+                        <h2 id="emergency-patient-name">Patient Name</h2>
+                        <div class="patient-id-emergency" id="emergency-patient-id">ID: --</div>
+                    </div>
+                </div>
+                <button class="emergency-reset-btn" onclick="resetEmergency()">
+                    <i class="fas fa-search"></i> Search Another Patient
+                </button>
+            </div>
+            
+            <!-- CRITICAL ALERT SECTION -->
+            <div class="critical-alert">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <div style="font-size: 15px; opacity: 0.9; font-weight: 700; letter-spacing: 1px;">🚨 EMERGENCY INFORMATION 🚨</div>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-card-emergency critical">
+                        <div class="card-label">BLOOD TYPE</div>
+                        <div class="card-value" id="emergency-blood">--</div>
+                        <div class="card-subvalue">Critical for transfusion</div>
+                    </div>
+                    
+                    <div class="info-card-emergency info">
+                        <div class="card-label">AGE</div>
+                        <div class="card-value" id="emergency-age">--</div>
+                        <div class="card-subvalue">Years</div>
+                    </div>
+                    
+                    <div class="info-card-emergency success">
+                        <div class="card-label">EMERGENCY CONTACT</div>
+                        <div class="card-value" style="font-size: 22px;" id="emergency-contact">--</div>
+                        <div class="card-subvalue">Immediate contact</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ALLERGIES SECTION -->
+            <div style="margin: 35px 0;">
+                <h3 style="color: #ff416c; margin-bottom: 25px; display: flex; align-items: center; gap: 15px;">
+                    <i class="fas fa-exclamation-triangle"></i> CRITICAL ALLERGIES
+                </h3>
+                <div id="emergency-allergies" class="info-grid">
+                    <div class="info-card-emergency success">
+                        <div class="card-label">STATUS</div>
+                        <div class="card-value">No Allergies</div>
+                        <div class="card-subvalue">Patient has no allergy records</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CONDITIONS SECTION -->
+            <div style="margin: 35px 0;">
+                <h3 style="color: #3498db; margin-bottom: 25px; display: flex; align-items: center; gap: 15px;">
+                    <i class="fas fa-stethoscope"></i> CHRONIC CONDITIONS
+                </h3>
+                <div id="emergency-diseases" class="info-grid">
+                    <div class="info-card-emergency info">
+                        <div class="card-label">STATUS</div>
+                        <div class="card-value">No Conditions</div>
+                        <div class="card-subtitle">No chronic disease records</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CURRENT MEDICATIONS -->
+            <div style="margin: 35px 0;">
+                <h3 style="color: #2ecc71; margin-bottom: 25px; display: flex; align-items: center; gap: 15px;">
+                    <i class="fas fa-pills"></i> CURRENT MEDICATIONS
+                </h3>
+                <div id="emergency-meds" class="info-grid">
+                    <div class="info-card-emergency info">
+                        <div class="card-label">STATUS</div>
+                        <div class="card-value">No Medications</div>
+                        <div class="card-subtitle">Patient has no active prescriptions</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ACTION BUTTONS -->
+            <div style="text-align: center; margin-top: 45px; padding-top: 30px; border-top: 3px solid #eee;">
+                <div class="emergency-actions">
+                    <button class="emergency-print-btn" onclick="printEmergencyCard()">
+                        <i class="fas fa-print"></i> Print Emergency Card
+                    </button>
+                    <button class="emergency-reset-btn" onclick="resetEmergency()">
+                        <i class="fas fa-search"></i> New Search
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEmergencyPatient = null;
+        let searchTimeout = null;
+        let userRole = '';
+        
+        // Initialize
+        window.onload = function() {
+            const user = localStorage.getItem('user');
+            if (user) {
+                const userData = JSON.parse(user);
+                userRole = userData.role;
+                
+                // Show home button for doctors (not for emergency role)
+                const homeBtn = document.getElementById('emergency-home-btn');
+                if (userRole !== 'emergency') {
+                    homeBtn.style.display = 'flex';
+                }
+            }
+            document.getElementById('emergency-input').focus();
+        };
+        
+        // Go to home page
+        function goToHome() {
+            window.location.href = '/';
+        }
+        
+        // Handle emergency RFID input
+        document.getElementById('emergency-input').addEventListener('input', function(e) {
+            const value = this.value.trim().toUpperCase();
+            document.getElementById('emergency-error').style.display = 'none';
+            
+            if (value.length >= 6 && /^RFID\d+$/.test(value)) {
+                loadEmergencyData(value);
+            }
+        });
+        
+        // Handle patient search
+        document.getElementById('patient-search-input').addEventListener('input', function(e) {
+            const searchTerm = this.value.trim();
+            
+            clearTimeout(searchTimeout);
+            
+            if (searchTerm.length < 2) {
+                hideSearchResults();
+                return;
+            }
+            
+            searchTimeout = setTimeout(() => {
+                searchPatients(searchTerm);
+            }, 300);
+        });
+        
+        // Search patients by name
+        async function searchPatients(searchTerm) {
+            try {
+                const response = await fetch(`/search-patients?search=${encodeURIComponent(searchTerm)}`);
+                if (response.ok) {
+                    const patients = await response.json();
+                    displaySearchResults(patients);
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                showEmergencyError('Search service unavailable. Please try scanning RFID instead.');
+            }
+        }
+        
+        // Display search results
+        function displaySearchResults(patients) {
+            const resultsDiv = document.getElementById('search-results');
+            
+            if (patients.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="search-result-item" style="justify-content: center; color: #7f8c8d; padding: 20px;">
+                        <i class="fas fa-user-times" style="margin-right: 10px;"></i>
+                        No patients found matching "${document.getElementById('patient-search-input').value}"
+                    </div>
+                `;
+                resultsDiv.style.display = 'block';
+                return;
+            }
+            
+            resultsDiv.innerHTML = patients.map(patient => `
+                <div class="search-result-item" onclick="selectPatient('${patient.patient_id}')">
+                    <div>
+                        <div class="patient-name">${patient.name}</div>
+                        <div style="font-size: 13px; color: #7f8c8d; margin-top: 4px;">
+                            <i class="far fa-calendar"></i> DOB: ${patient.dob}
+                        </div>
+                    </div>
+                    <div class="patient-id">${patient.patient_id}</div>
+                </div>
+            `).join('');
+            
+            resultsDiv.style.display = 'block';
+            
+            // Fix scroll behavior
+            setTimeout(() => {
+                if (resultsDiv.scrollHeight > resultsDiv.clientHeight) {
+                    resultsDiv.style.overflowY = 'auto';
+                } else {
+                    resultsDiv.style.overflowY = 'visible';
+                }
+            }, 10);
+        }
+        
+        // Hide search results
+        function hideSearchResults() {
+            document.getElementById('search-results').style.display = 'none';
+        }
+        
+        // Select patient from search results
+        function selectPatient(patientId) {
+            document.getElementById('emergency-input').value = patientId;
+            document.getElementById('patient-search-input').value = '';
+            hideSearchResults();
+            loadEmergencyData(patientId);
+        }
+        
+        // Clear search
+        function clearSearch() {
+            document.getElementById('emergency-input').value = '';
+            document.getElementById('patient-search-input').value = '';
+            document.getElementById('emergency-error').style.display = 'none';
+            hideSearchResults();
+            document.getElementById('emergency-input').focus();
+        }
+        
+        // Load emergency data
+        async function loadEmergencyData(uid) {
+            try {
+                showLoading();
+                
+                const response = await fetch(`/emergency-details/${uid}`);
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        showEmergencyError(`Patient ${uid} not found. Valid IDs: RFID001 to RFID050`);
+                    } else {
+                        showEmergencyError('Network error. Please try again.');
+                    }
+                    hideLoading();
+                    return;
+                }
+                
+                const data = await response.json();
+                currentEmergencyPatient = data;
+                
+                // Switch to dashboard view
+                document.getElementById('scanner-section').style.display = 'none';
+                document.getElementById('emergency-info').style.display = 'block';
+                
+                // Update dashboard with emergency data
+                updateEmergencyDashboard(data);
+                
+                hideLoading();
+                
+            } catch (error) {
+                showEmergencyError('Error loading emergency data. Please check connection.');
+                hideLoading();
+            }
+        }
+        
+        // Show loading state
+        function showLoading() {
+            const errorDiv = document.getElementById('emergency-error');
+            errorDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px; justify-content: center; padding: 20px;">
+                    <i class="fas fa-spinner fa-spin fa-lg"></i>
+                    <span style="font-size: 16px; font-weight: 700;">Loading emergency data...</span>
+                </div>
+            `;
+            errorDiv.style.display = 'block';
+        }
+        
+        // Hide loading state
+        function hideLoading() {
+            document.getElementById('emergency-error').style.display = 'none';
+        }
+        
+        // Update emergency dashboard
+        function updateEmergencyDashboard(data) {
+            // Update avatar and name
+            const avatar = document.getElementById('emergency-patient-avatar');
+            avatar.textContent = data.name.charAt(0).toUpperCase();
+            
+            // Basic info
+            document.getElementById('emergency-patient-name').textContent = data.name;
+            document.getElementById('emergency-patient-id').textContent = `ID: ${data.patient_id}`;
+            document.getElementById('emergency-blood').textContent = data.blood_type || 'Unknown';
+            document.getElementById('emergency-age').textContent = data.age || '--';
+            document.getElementById('emergency-contact').textContent = data.emergency_contact || 'Not specified';
+            
+            // Update allergies
+            const allergiesDiv = document.getElementById('emergency-allergies');
+            if (data.allergies && data.allergies.length > 0) {
+                allergiesDiv.innerHTML = data.allergies.map(allergy => `
+                    <div class="info-card-emergency ${allergy.severity === 'Severe' ? 'critical' : 'warning'}">
+                        <div class="card-label">${allergy.severity.toUpperCase()} ALLERGY</div>
+                        <div class="card-value">${allergy.name}</div>
+                        <div class="card-subvalue">
+                            ${allergy.severity === 'Severe' ? '⚠️ Requires immediate attention' : 'Monitor carefully'}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                allergiesDiv.innerHTML = `
+                    <div class="info-card-emergency success">
+                        <div class="card-label">STATUS</div>
+                        <div class="card-value">No Allergies</div>
+                        <div class="card-subvalue">Patient has no allergy records</div>
+                    </div>
+                `;
+            }
+            
+            // Update diseases
+            const diseasesDiv = document.getElementById('emergency-diseases');
+            if (data.chronic_diseases && data.chronic_diseases.length > 0) {
+                diseasesDiv.innerHTML = data.chronic_diseases.map(disease => `
+                    <div class="info-card-emergency info">
+                        <div class="card-label">CHRONIC CONDITION</div>
+                        <div class="card-value">${disease}</div>
+                        <div class="card-subvalue">Requires ongoing management</div>
+                    </div>
+                `).join('');
+            } else {
+                diseasesDiv.innerHTML = `
+                    <div class="info-card-emergency info">
+                        <div class="card-label">STATUS</div>
+                        <div class="card-value">No Conditions</div>
+                        <div class="card-subvalue">No chronic disease records</div>
+                    </div>
+                `;
+            }
+            
+            // Update medications
+            const medsDiv = document.getElementById('emergency-meds');
+            if (data.current_prescriptions && data.current_prescriptions.length > 0) {
+                medsDiv.innerHTML = data.current_prescriptions.map(med => `
+                    <div class="info-card-emergency success">
+                        <div class="card-label">ACTIVE MEDICATION</div>
+                        <div class="card-value">${med.drug_name || 'Unknown'}</div>
+                        <div class="card-subvalue">Dosage: ${med.dosage || 'Not specified'}</div>
+                    </div>
+                `).join('');
+            } else {
+                medsDiv.innerHTML = `
+                    <div class="info-card-emergency info">
+                        <div class="card-label">STATUS</div>
+                        <div class="card-value">No Medications</div>
+                        <div class="card-subvalue">Patient has no active prescriptions</div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Show emergency error
+        function showEmergencyError(message) {
+            const errorDiv = document.getElementById('emergency-error');
+            errorDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 15px; background: linear-gradient(135deg, rgba(255, 234, 234, 0.95), rgba(255, 204, 204, 0.95)); padding: 18px; border-radius: 14px; border-left: 6px solid #ff416c; box-shadow: 0 8px 25px rgba(255, 65, 108, 0.2);">
+                    <i class="fas fa-exclamation-circle fa-lg"></i>
+                    <div style="font-weight: 700;">${message}</div>
+                </div>
+            `;
+            errorDiv.style.display = 'block';
+            
+            // Auto-hide after 8 seconds
+            setTimeout(() => {
+                if (errorDiv.style.display === 'block') {
+                    errorDiv.style.display = 'none';
+                }
+            }, 8000);
+        }
+        
+        // Reset emergency view
+        function resetEmergency() {
+            document.getElementById('scanner-section').style.display = 'block';
+            document.getElementById('emergency-info').style.display = 'none';
+            clearSearch();
+            document.getElementById('emergency-input').focus();
+        }
+        
+        // Print emergency card
+        function printEmergencyCard() {
+            if (!currentEmergencyPatient) return;
+            
+            const printWindow = window.open('', '_blank');
+            const now = new Date();
+            const timestamp = now.toLocaleString();
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Emergency Card - ${currentEmergencyPatient.name}</title>
+                    <style>
+                        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { 
+                            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+                            background: #f8f9fa; 
+                            padding: 40px; 
+                            display: flex; 
+                            justify-content: center; 
+                            align-items: center; 
+                            min-height: 100vh;
+                        }
+                        .emergency-card { 
+                            background: white; 
+                            border: 5px solid #ff416c; 
+                            border-radius: 25px; 
+                            padding: 40px; 
+                            max-width: 600px; 
+                            width: 100%; 
+                            box-shadow: 0 25px 60px rgba(255, 65, 108, 0.3);
+                            position: relative;
+                            overflow: hidden;
+                        }
+                        .emergency-card::before {
+                            content: '🚨 EMERGENCY 🚨';
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+                            color: white;
+                            text-align: center;
+                            padding: 15px;
+                            font-weight: 900;
+                            font-size: 18px;
+                            letter-spacing: 2px;
+                        }
+                        .emergency-title { 
+                            color: #ff416c; 
+                            text-align: center; 
+                            margin: 60px 0 40px 0; 
+                            font-size: 32px;
+                            font-weight: 900;
+                            letter-spacing: -0.5px;
+                        }
+                        .patient-header {
+                            text-align: center;
+                            margin-bottom: 40px;
+                            padding-bottom: 25px;
+                            border-bottom: 3px solid #eee;
+                        }
+                        .patient-name {
+                            font-size: 42px;
+                            font-weight: 900;
+                            color: #2c3e50;
+                            margin-bottom: 10px;
+                            letter-spacing: -1px;
+                        }
+                        .patient-id {
+                            font-size: 20px;
+                            color: #7f8c8d;
+                            font-weight: 700;
+                            background: #f8f9fa;
+                            padding: 8px 20px;
+                            border-radius: 50px;
+                            display: inline-block;
+                        }
+                        .info-grid { 
+                            display: grid; 
+                            grid-template-columns: repeat(2, 1fr); 
+                            gap: 25px; 
+                            margin: 40px 0; 
+                        }
+                        .info-item { 
+                            margin: 15px 0; 
+                            padding: 20px;
+                            border-radius: 15px;
+                            background: linear-gradient(135deg, #f8f9fa, #ffffff);
+                            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+                        }
+                        .critical { 
+                            color: #ff416c; 
+                            font-weight: 900; 
+                            font-size: 24px;
+                        }
+                        .section { 
+                            margin: 30px 0; 
+                            padding: 25px; 
+                            border: 2px solid; 
+                            border-radius: 20px; 
+                            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+                            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+                        }
+                        .section-title { 
+                            font-weight: 900; 
+                            font-size: 20px;
+                            margin-bottom: 20px; 
+                            padding-bottom: 15px; 
+                            border-bottom: 3px solid; 
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                        }
+                        .allergy-section { 
+                            border-color: #ff416c; 
+                            background: linear-gradient(135deg, #ffeaea, #ffcccc);
+                        }
+                        .allergy-section .section-title { 
+                            color: #ff416c; 
+                            border-color: #ff416c; 
+                        }
+                        .condition-section { 
+                            border-color: #3498db; 
+                            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+                        }
+                        .condition-section .section-title { 
+                            color: #3498db; 
+                            border-color: #3498db; 
+                        }
+                        .medication-section { 
+                            border-color: #2ecc71; 
+                            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+                        }
+                        .medication-section .section-title { 
+                            color: #2ecc71; 
+                            border-color: #2ecc71; 
+                        }
+                        .contact-section {
+                            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+                            border-color: #f39c12;
+                            text-align: center;
+                            margin: 40px 0;
+                        }
+                        .contact-section .section-title {
+                            color: #f39c12;
+                            border-color: #f39c12;
+                            justify-content: center;
+                        }
+                        .contact-number {
+                            font-size: 36px;
+                            font-weight: 900;
+                            color: #2c3e50;
+                            margin: 20px 0;
+                            letter-spacing: 1px;
+                        }
+                        .warning {
+                            background: linear-gradient(135deg, #ffeaea, #ffcccc);
+                            padding: 20px;
+                            border-radius: 15px;
+                            margin: 20px 0;
+                            border-left: 6px solid #ff416c;
+                            font-weight: 700;
+                        }
+                        .footer {
+                            margin-top: 50px;
+                            text-align: center;
+                            color: #95a5a6;
+                            font-size: 14px;
+                            border-top: 2px solid #eee;
+                            padding-top: 25px;
+                        }
+                        .qr-placeholder {
+                            text-align: center;
+                            margin: 30px 0;
+                            padding: 30px;
+                            background: #f8f9fa;
+                            border-radius: 20px;
+                            border: 3px dashed #3498db;
+                        }
+                        .qr-placeholder div {
+                            font-size: 48px;
+                            margin-bottom: 15px;
+                        }
+                        @media print {
+                            body { padding: 0; }
+                            .emergency-card { 
+                                border: 3px solid #ff416c; 
+                                box-shadow: none; 
+                                max-width: 100%;
+                                page-break-inside: avoid;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="emergency-card">
+                        <div class="patient-header">
+                            <div class="patient-name">${currentEmergencyPatient.name}</div>
+                            <div class="patient-id">ID: ${currentEmergencyPatient.patient_id}</div>
+                        </div>
+                        
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div style="font-size: 14px; color: #7f8c8d; margin-bottom: 8px;">BLOOD TYPE</div>
+                                <div class="critical">${currentEmergencyPatient.blood_type || 'Unknown'}</div>
+                            </div>
+                            <div class="info-item">
+                                <div style="font-size: 14px; color: #7f8c8d; margin-bottom: 8px;">AGE</div>
+                                <div style="font-size: 32px; font-weight: 900; color: #2c3e50;">${currentEmergencyPatient.age || '--'}</div>
+                            </div>
+                        </div>
+                        
+                        ${currentEmergencyPatient.allergies && currentEmergencyPatient.allergies.length > 0 ? `
+                            <div class="allergy-section">
+                                <div class="section-title"><i class="fas fa-exclamation-triangle"></i> ALLERGIES & SENSITIVITIES</div>
+                                ${currentEmergencyPatient.allergies.map(a => `
+                                    <div style="margin: 15px 0; padding: 15px; background: ${a.severity === 'Severe' ? 'linear-gradient(135deg, #ffcccc, #ff9999)' : 'linear-gradient(135deg, #fff3cd, #ffeaa7)'}; border-radius: 12px; border-left: 4px solid ${a.severity === 'Severe' ? '#ff416c' : '#f39c12'};">
+                                        <div style="font-weight: 900; color: #2c3e50; font-size: 18px;">${a.name}</div>
+                                        <div style="color: ${a.severity === 'Severe' ? '#ff416c' : '#f39c12'}; font-weight: 800; margin-top: 5px;">
+                                            <i class="fas fa-exclamation-circle"></i> ${a.severity.toUpperCase()}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                ${currentEmergencyPatient.allergies.some(a => a.severity === 'Severe') ? `
+                                    <div class="warning">
+                                        <i class="fas fa-skull-crossbones"></i> CRITICAL: Contains severe allergies requiring immediate attention
+                                    </div>
+                                ` : ''}
+                            </div>
+                        ` : ''}
+                        
+                        ${currentEmergencyPatient.chronic_diseases && currentEmergencyPatient.chronic_diseases.length > 0 ? `
+                            <div class="condition-section">
+                                <div class="section-title"><i class="fas fa-stethoscope"></i> CHRONIC CONDITIONS</div>
+                                ${currentEmergencyPatient.chronic_diseases.map(d => `
+                                    <div style="margin: 12px 0; padding: 12px; background: white; border-radius: 10px; border: 1px solid #e3f2fd;">
+                                        <div style="font-weight: 800; color: #2c3e50;">${d}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        ${currentEmergencyPatient.current_prescriptions && currentEmergencyPatient.current_prescriptions.length > 0 ? `
+                            <div class="medication-section">
+                                <div class="section-title"><i class="fas fa-pills"></i> CURRENT MEDICATIONS</div>
+                                ${currentEmergencyPatient.current_prescriptions.map(m => `
+                                    <div style="margin: 12px 0; padding: 12px; background: white; border-radius: 10px; border: 1px solid #d4edda;">
+                                        <div style="font-weight: 800; color: #2c3e50;">${m.drug_name || 'Unknown'}</div>
+                                        <div style="color: #5a6268; margin-top: 5px;">Dosage: ${m.dosage || 'Not specified'}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        <div class="contact-section">
+                            <div class="section-title"><i class="fas fa-phone-alt"></i> EMERGENCY CONTACT</div>
+                            <div class="contact-number">${currentEmergencyPatient.emergency_contact || 'Not specified'}</div>
+                            <div style="color: #5a6268; font-size: 14px;">Call immediately in case of emergency</div>
+                        </div>
+                        
+                        <div class="qr-placeholder">
+                            <div>📱</div>
+                            <div style="font-weight: 800; color: #2c3e50;">SCAN FOR FULL MEDICAL HISTORY</div>
+                            <div style="font-size: 12px; color: #7f8c8d; margin-top: 10px;">Patient ID: ${currentEmergencyPatient.patient_id}</div>
+                        </div>
+                        
+                        <div class="footer">
+                            <div style="font-weight: 800; color: #2c3e50; margin-bottom: 5px;">Generated by Emergency Medical System</div>
+                            <div>${timestamp}</div>
+                            <div style="margin-top: 15px; font-size: 12px; color: #bdc3c7;">This document contains sensitive medical information</div>
+                        </div>
+                    </div>
+                    <script>
+                        window.onload = function() {
+                            window.print();
+                            setTimeout(() => window.close(), 1000);
+                        };
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = '/logout';
+        }
+        
+        // Close search results when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-container')) {
+                hideSearchResults();
+            }
+        });
+        
+        // Auto-focus on input and add keyboard shortcuts
+        document.getElementById('emergency-input').focus();
+        
+        document.addEventListener('keydown', function(e) {
+            // Escape key to clear search
+            if (e.key === 'Escape') {
+                clearSearch();
+            }
+            // Ctrl+F to focus search
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                document.getElementById('patient-search-input').focus();
+            }
+        });
+    </script>
+</body>
+</html>
