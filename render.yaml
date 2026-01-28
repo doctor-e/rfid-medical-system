@@ -2,7 +2,7 @@ services:
   - type: web
     name: rfid-medical-system
     env: python
-    plan: free  
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
@@ -13,4 +13,4 @@ services:
 
 databases:
   - name: rfid_db
-    plan: free 
+    plan: free
