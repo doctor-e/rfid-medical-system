@@ -21,6 +21,6 @@ A FastAPI-based medical patient management system with RFID integration.
 - Doctor: `drissm` / `password123`
 - Pharmacist: `linaf` / `password123`
 - Emergency: `samiro` / `password123`
-⚠️ Security note: Do NOT reuse these credentials in production. Always rotate passwords before deploying.
+-  ⚠️ Security note: Do NOT reuse these credentials in production. Always rotate passwords before deploying.
 
 ## Patient IDs (RFID001 to RFID050)
