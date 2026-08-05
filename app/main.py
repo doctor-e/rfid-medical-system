@@ -55,7 +55,7 @@ def login(data: dict, db: Session = Depends(get_db)):
     password = data.get("password", "").strip()
     
     user = db.execute(text("""
-        SELECT * FROM user WHERE username = :username
+        SELECT * FROM "user" WHERE username = :username
     """), {"username": username}).fetchone()
     
     if not user:
@@ -422,8 +422,8 @@ def create_prescription_api(data: dict, db=Depends(get_db)):
         # Check conflicts first (double-check on server side)
         patient = db.execute(text("""
             SELECT p.patient_id, 
-                   GROUP_CONCAT(DISTINCT a.name) as allergies,
-                   GROUP_CONCAT(DISTINCT cd.name) as diseases
+                   STRING_AGG(DISTINCT a.name, ',') as allergies,
+                   STRING_AGG(DISTINCT cd.name, ',') as diseases
             FROM patient p
             LEFT JOIN allergy a ON p.patient_id = a.patient_id
             LEFT JOIN chronicdisease cd ON p.patient_id = cd.patient_id
@@ -449,10 +449,15 @@ def create_prescription_api(data: dict, db=Depends(get_db)):
         # Create prescription
         result = db.execute(text("""
             INSERT INTO prescription (patient_id, user_id, prescription_date, status)
-            VALUES (:patient, :user, CURDATE(), 'active')
+            VALUES (:patient, :user, CURRENT_DATE, 'active')
         """), {"patient": patient_id, "user": user_id})
         
-        prescription_id = result.lastrowid
+       result = db.execute(text("""
+          INSERT INTO prescription (patient_id, user_id, prescription_date, status)
+          VALUES (:patient, :user, CURRENT_DATE, 'active')
+          RETURNING prescription_id
+       """), {"patient": patient_id, "user": user_id})
+       prescription_id = result.scalar()
         
         # Add each drug
         for drug in drugs:
